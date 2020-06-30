@@ -22,7 +22,7 @@
 
 # GAME CONSTANTS
 TORUS = False
-OPEN_FIRST = False # false to be able to lose on first click
+OPEN_FIRST = False  # false to be able to lose on first click
 LOAD_NN = True
 LOAD_ML = False
 SAVE_NN = False
@@ -31,7 +31,7 @@ SAVE_CSV = True
 ASCII_OUTPUT = False
 LEARN = False
 DRAW = True
-RECORD = False # this is really resource intensive
+RECORD = False  # this is really resource intensive
 HUMAN = False
 CHUNK = 100
 SAVE_CHUNK = 1
@@ -44,25 +44,27 @@ ML_NAME = "ml.obj"
 NN_NAME = "primed_nn.obj"
 
 import math, os, sys, platform, pickle, random
+
 if DRAW:
     import pygame
     from pygame.locals import *
 from neural_network import *
 from agent import *
+
 try:
     from numpy import *
     import numpy.random as nrand
 except:
-    print "You need numpy! Ahh!"
+    print("You need numpy! Ahh!")
     exit(-1)
-    
-    
+
+
 ########################################################################
 # MINESWEEPER
 ########################################################################
 
 class Game:
-    def __init__(self, width, height, mines, draw = True, tile_size = 32, torus = False):
+    def __init__(self, width, height, mines, draw=True, tile_size=32, torus=False):
         self.width = width
         self.height = height
         self.mines = mines
@@ -101,7 +103,7 @@ class Game:
         self.result = -1
         for i in range(self.width):
             for j in range(self.height):
-                self.guess[(i,j)] = .5
+                self.guess[(i, j)] = .5
 
         self.mine_array = {}
         for h in range(self.height):
@@ -135,7 +137,7 @@ class Game:
         self.did_change = True
         self.board[pos] = symbol
 
-        #draw stuff if drawing turned on
+        # draw stuff if drawing turned on
         if self.draw_board:
             x, y = pos
             p = (x * self.tile_size, y * self.tile_size)
@@ -155,7 +157,7 @@ class Game:
                 except:
                     s += "X"
             s += "\n"
-        print s
+        print(s)
 
     def mark(self, pos):
         # place a flag down or pull one up
@@ -185,14 +187,14 @@ class Game:
                 self.incorrect_digs += 1
             return cleared
 
-    def clear(self, pos, auto = False):
+    def clear(self, pos, auto=False):
         cleared = 0
         x = pos[0]
         y = pos[1]
 
         # if the space has a mine and it's not your first move
         if (self.mine_array[pos] == 1 and
-            (not self.first_click or not OPEN_FIRST)):
+                (not self.first_click or not OPEN_FIRST)):
 
             # go through every space on the board
             for h in range(self.height):
@@ -200,7 +202,7 @@ class Game:
 
                     # if the space is empty and flagged
                     if (self.mine_array[(w, h)] == 0 and
-                        self.board[(w, h)] == "f"):
+                            self.board[(w, h)] == "f"):
 
                         # mark it as incorrectly flagged
                         self.upTile((w, h), "i")
@@ -221,7 +223,7 @@ class Game:
                         self.upTile((w, h), "m")
 
             # mark your position as exploded
-            self.upTile(pos, "e") #
+            self.upTile(pos, "e")  #
 
             # end the game
             self.loses += 1
@@ -233,13 +235,13 @@ class Game:
             if self.torus:
                 w = self.width
                 h = self.height
-                area = [((x-1)%w, (y-1)%h), (x, (y-1)%h), ((x+1)%w, (y-1)%h),
-                        ((x-1)%w, y)      , (x, y)      , ((x+1)%w, y)      ,
-                        ((x-1)%w, (y+1)%h), (x, (y+1)%h), ((x+1)%w, (y+1)%h)]
+                area = [((x - 1) % w, (y - 1) % h), (x, (y - 1) % h), ((x + 1) % w, (y - 1) % h),
+                        ((x - 1) % w, y), (x, y), ((x + 1) % w, y),
+                        ((x - 1) % w, (y + 1) % h), (x, (y + 1) % h), ((x + 1) % w, (y + 1) % h)]
             else:
-                area = [(x-1, y-1), (x, y-1), (x+1, y-1),
-                        (x-1, y),   (x, y),   (x+1, y),
-                        (x-1, y+1), (x, y+1), (x+1, y+1)]
+                area = [(x - 1, y - 1), (x, y - 1), (x + 1, y - 1),
+                        (x - 1, y), (x, y), (x + 1, y),
+                        (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)]
             count = 0
             for s in area:
                 try:
@@ -260,7 +262,6 @@ class Game:
                         else:
                             break
 
-
         # if the space is empty
         if self.mine_array[pos] == 0:
 
@@ -268,14 +269,14 @@ class Game:
             if self.torus:
                 w = self.width
                 h = self.height
-                area = [((x-1)%w, (y-1)%h), (x, (y-1)%h), ((x+1)%w, (y-1)%h),
-                        ((x-1)%w, y)      , (x, y)      , ((x+1)%w, y)      ,
-                        ((x-1)%w, (y+1)%h), (x, (y+1)%h), ((x+1)%w, (y+1)%h)]
+                area = [((x - 1) % w, (y - 1) % h), (x, (y - 1) % h), ((x + 1) % w, (y - 1) % h),
+                        ((x - 1) % w, y), (x, y), ((x + 1) % w, y),
+                        ((x - 1) % w, (y + 1) % h), (x, (y + 1) % h), ((x + 1) % w, (y + 1) % h)]
             else:
-                area = [(x-1, y-1), (x, y-1), (x+1, y-1),
-                        (x-1, y),   (x, y),   (x+1, y),
-                        (x-1, y+1), (x, y+1), (x+1, y+1)]
-                        
+                area = [(x - 1, y - 1), (x, y - 1), (x + 1, y - 1),
+                        (x - 1, y), (x, y), (x + 1, y),
+                        (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)]
+
             # if the space is unknown
             if self.board[pos] == "_":
                 cleared += 1
@@ -286,8 +287,7 @@ class Game:
                     try:
                         mines += self.mine_array[s]
                     except:
-                        pass # invalid position
-
+                        pass  # invalid position
 
                 # set your image to the number of adj. mines
                 self.upTile(pos, str(mines))
@@ -302,11 +302,11 @@ class Game:
                         if self.board[s] == "f":
                             flags += 1
                     except:
-                        pass # invalid position
+                        pass  # invalid position
 
                 # if the number of flags is your number
                 if ((flags == int(self.board[pos]) and not auto) or
-                    int(self.board[pos]) == 0):
+                        int(self.board[pos]) == 0):
 
                     # clear all of the unknown spaces around you
                     for s in area:
@@ -314,8 +314,7 @@ class Game:
                             if self.board[s] == "_":
                                 cleared += self.clear(s, True)
                         except:
-                            pass # invalid position
-
+                            pass  # invalid position
 
         return cleared
 
@@ -324,17 +323,17 @@ class Game:
         covered = 0
         for w in range(self.width):
             for h in range(self.height):
-                if (self.board[(w,h)] != "_" and
-                    self.board[(w,h)] != "f" and
-                    self.mine_array[(w,h)] == 0):
-                        cleared += 1
-                if (self.board[(w,h)] == "_" or
-                    self.board[(w,h)] == "f" and
-                    self.mine_array[(w,h)] == 1):
-                        covered += 1
+                if (self.board[(w, h)] != "_" and
+                        self.board[(w, h)] != "f" and
+                        self.mine_array[(w, h)] == 0):
+                    cleared += 1
+                if (self.board[(w, h)] == "_" or
+                        self.board[(w, h)] == "f" and
+                        self.mine_array[(w, h)] == 1):
+                    covered += 1
         self.cleared = cleared
         if (cleared == ((self.width * self.height) - self.mines) and
-            covered == self.mines):
+                covered == self.mines):
             self.FINISHED = True
             return True
         self.FINISHED = False
@@ -345,7 +344,7 @@ class Game:
         correct = 0
         for x in range(self.width):
             for y in range(self.height):
-                err = abs(self.mine_array[(x,y)] - self.guess[(x,y)])
+                err = abs(self.mine_array[(x, y)] - self.guess[(x, y)])
                 sq_err += err ** 2
                 if err < .5: correct += 1
         sq_err /= float(self.width * self.height)
@@ -358,37 +357,40 @@ class Game:
 ################################################################################
 
 def randomGame():
-    game = Game(4,4,3)
+    game = Game(4, 4, 3)
     while 1:
         game.reset()
         while not game.done:
-            c = random.randint(0,1)
+            c = random.randint(0, 1)
             x = random.randint(0, game.width - 1)
             y = random.randint(0, game.height - 1)
             if c == 0:
-                game.dig((x,y))
+                game.dig((x, y))
             elif c == 1:
-                game.mark((x,y))
+                game.mark((x, y))
         w, l = game.wins, game.loses
-        print w,"w",l,"l",(w*100.0)/(w+l),"%"
-        try: input()
-        except: pass
+        print(w, "w", l, "l", (w * 100.0) / (w + l), "%")
+        try:
+            input()
+        except:
+            pass
+
 
 def main():
     if DIFF == 0:
-        #print "SMALL - 8x8 w/ 10 mines"
+        # print "SMALL - 8x8 w/ 10 mines"
         w = 8
         h = 8
         m = 10
         t = 64
     if DIFF == 1:
-        #print "MEDIUM - 16x16 w/ 40 mines"
+        # print "MEDIUM - 16x16 w/ 40 mines"
         w = 16
         h = 16
         m = 40
         t = 32
     if DIFF == 2:
-        #print "LARGE - 32x16 w/ 99 mines"
+        # print "LARGE - 32x16 w/ 99 mines"
         w = 32
         h = 16
         m = 99
@@ -402,7 +404,7 @@ def main():
 
     # create your game board
     if DRAW: os.environ['SDL_VIDEO_CENTERED'] = '1'
-    game = Game(w, h, m, draw = DRAW, tile_size = t, torus = TORUS)
+    game = Game(w, h, m, draw=DRAW, tile_size=t, torus=TORUS)
     count = 0
     frame = 0
     banner = "W:0 - L:0"
@@ -414,7 +416,7 @@ def main():
     alist = []
     for i in range(AGENTS):
         alist.append(Agent(game))
-    #agent.cheat = True
+    # agent.cheat = True
     if HUMAN:
         alist[0].switch()
 
@@ -425,47 +427,47 @@ def main():
         if DIFF_MINDS:
             for i in range(len(alist)):
                 try:
-                    f = open(os.path.join("data","nn" + str(i) + ".obj"), "r")
+                    f = open(os.path.join("data", "nn" + str(i) + ".obj"), "r")
                     alist[i].nn = pickle.load(f)
-                    print "Loading Agent " + str(i) + "'s neural network."
+                    print("Loading Agent " + str(i) + "'s neural network.")
                     f.close()
                 except:
                     try:
-                        f = open(os.path.join("data",NN_NAME), "r")
+                        f = open(os.path.join("data", NN_NAME), "r")
                         alist[i].nn = pickle.load(f)
                         for agent in alist:
                             agent.nn = alist[i].nn
-                        print "Loading stock neural network."
+                        print("Loading stock neural network.")
                         f.close()
                     except:
-                        #print sys.exc_info()
-                        print "Couldn't load mind. Creating one."
+                        # print sys.exc_info()
+                        print("Couldn't load mind. Creating one.")
         else:
             try:
-                f = open(os.path.join("data",NN_NAME), "r")
+                f = open(os.path.join("data", NN_NAME), "r")
                 alist[0].nn = pickle.load(f)
                 for agent in alist:
                     agent.nn = alist[0].nn
-                print "Loading neural network."
+                print("Loading neural network.")
                 f.close()
             except:
-                #print sys.exc_info()
-                print "Couldn't load mind. Creating one."
-                
+                # print sys.exc_info()
+                print("Couldn't load mind. Creating one.")
+
     ####################################################################
     # load your move list
     ####################################################################
     if LOAD_ML:
         for agent in alist:
             try:
-                f = open(os.path.join("data",ML_NAME), "r")
+                f = open(os.path.join("data", ML_NAME), "r")
                 agent.move_list = pickle.load(f)
-                print str(len(agent.move_list)) + " moves loaded."
+                print(str(len(agent.move_list)) + " moves loaded.")
                 f.close()
             except:
-                #print sys.exc_info()
-                print "Couldn't load moves."
-       
+                # print sys.exc_info()
+                print("Couldn't load moves.")
+
     ####################################################################
     # create a log file
     ####################################################################
@@ -495,43 +497,42 @@ def main():
                 print("Squared Error", sq_err)
                 print("Percent Correct", correct)
                 game.printBoard()
-            
+
             if game.draw_board:
-                game.clock.tick()#60) #to pace the bot
-                for event in pygame.event.get() :
+                game.clock.tick()  # 60) #to pace the bot
+                for event in pygame.event.get():
                     if event.type == QUIT:
                         game.running = False
-                        pygame.quit ()
+                        pygame.quit()
 
                     # if the keyboard is used
                     elif event.type == KEYDOWN:
                         if event.key == K_ESCAPE:
                             game.running = False
-                            pygame.quit ()
+                            pygame.quit()
                         if ((event.key == K_r and alist[0].human) or
-                            (event.key == K_h and not alist[0].human)):
+                                (event.key == K_h and not alist[0].human)):
                             alist[0].switch()
                         if event.key == K_c:
                             alist[0].cheat = bool(1 - int(alist[0].cheat))
                         if event.key == K_g:
                             game.goggles = (game.goggles + 1) % 3
 
-
                 if game.goggles == 0 or game.goggles == 1:
-                    screen.blit(game.surface, (0,0))
+                    screen.blit(game.surface, (0, 0))
 
                 # DRAW AGENT'S GUESS
                 # purple = mine, yellow = not mine
                 # transparent = certain, opaque = not sure
                 if game.goggles == 1 or game.goggles == 2:
-                    temp = pygame.Surface((w,h))
-                    tran = pygame.Surface((t-1, t-1))
+                    temp = pygame.Surface((w, h))
+                    tran = pygame.Surface((t - 1, t - 1))
                     for i in range(w):
                         for j in range(h):
-                            g = 1 - game.guess[(i,j)]
+                            g = 1 - game.guess[(i, j)]
                             g *= 255
-                            tran.fill((160,g,255-g))
-                            g = int(min(g, 255-g) * 2)
+                            tran.fill((160, g, 160 - g))
+                            g = int(min(g, 160 - g) * 2)
                             tran.set_alpha(int(g / 1.4))
                             screen.blit(tran, (i * t + 1, j * t + 1))
 
@@ -540,15 +541,15 @@ def main():
                 ########################################################
                 for agent in alist:
                     x, y = agent.pos
-                    rx, ry = random.randint(-t/3,t/3), random.randint(-t/3,t/3)
-                    X, Y = x * t + t/2.0 + rx, y * t + t/2.0 + ry
-                    pygame.draw.circle(screen, (0,0,0), (int(X),int(Y)), 3)
+                    rx, ry = random.randint(-t / 3, t / 3), random.randint(-t / 3, t / 3)
+                    X, Y = x * t + t / 2.0 + rx, y * t + t / 2.0 + ry
+                    pygame.draw.circle(screen, (0, 0, 0), (int(X), int(Y)), 3)
 
                 ########################################################
                 # MAKE A MOVIE
                 ########################################################
                 if RECORD and game.did_change:
-                    print "recording"
+                    print("recording")
                     old_board = copy(game.board)
                     pygame.image.save(screen, os.path.join("video", str(frame) + ".png"))
                     frame += 1
@@ -565,8 +566,9 @@ def main():
         ################################################################
         win, lose = game.wins, game.loses
         try:
-            win_pct = (win*100.0)/(win+lose)
-        except: win_pct = 0
+            win_pct = (win * 100.0) / (win + lose)
+        except:
+            win_pct = 0
 
         s = (str(win_pct) + "," +
              str(sq_err) + "," +
@@ -580,8 +582,8 @@ def main():
 
         banner = "W: " + str(win) + " - L: " + str(lose)
         if DRAW: pygame.display.set_caption(banner)
-        #print "W: ", win, " - L: ", lose
-        print s
+        # print "W: ", win, " - L: ", lose
+        print(s)
 
         ################################################################
         # START NEW FILE AFTER chunk ITTERATIONS
@@ -621,40 +623,41 @@ def main():
                 for i in range(len(alist)):
                     if i % SAVE_CHUNK == count % SAVE_CHUNK:
                         try:
-                            f = open(os.path.join("data","nn" + str(i) + ".obj"), "w")
+                            f = open(os.path.join("data", "nn" + str(i) + ".obj"), "w")
                             pickle.dump(alist[i].nn, f)
-                            print "Saving neural network number " + str(i) + "."
+                            print("Saving neural network number " + str(i) + ".")
                             f.close()
                         except:
-                            #pass
-                            print "Couldn't save your neural network."
+                            # pass
+                            print("Couldn't save your neural network.")
             else:
                 try:
-                    f = open(os.path.join("data",NN_NAME), "w")
+                    f = open(os.path.join("data", NN_NAME), "w")
                     pickle.dump(alist[0].nn, f)
-                    print "Saving your neural network."
+                    print("Saving your neural network.")
                     f.close()
                 except:
-                    #pass
-                    print "Couldn't save your neural network."
+                    # pass
+                    print("Couldn't save your neural network.")
 
         ################################################################
         # SAVE MOVE LIST
         ################################################################
         if SAVE_ML and count % SAVE_INT == 0:
             try:
-                f = open(os.path.join("data",ML_NAME), "w")
+                f = open(os.path.join("data", ML_NAME), "w")
                 pickle.dump(alist[0].move_list, f)
-                print "Saved " + str(len(alist[0].move_list)) + " moves."
+                print("Saved " + str(len(alist[0].move_list)) + " moves.")
                 f.close()
             except:
-                #pass
-                print "Couldn't save your moves."
+                # pass
+                print("Couldn't save your moves.")
 
         ################################################################
         # RESET BOARD
         ################################################################
         game.reset()
+
 
 if __name__ == '__main__':
     main()

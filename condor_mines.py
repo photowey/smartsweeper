@@ -10,16 +10,16 @@ HUG_EDGE = .9
 BRN2GRN = 0
 GREED = 0
 EXPLORE = 1
-TO_DIG = 1 # low numbers make digging difficult
-TO_FLAG = 1 # low numbers make flagging easy
-TO_UNFLAG = 1 # low numbers make unflagging easy
+TO_DIG = 1  # low numbers make digging difficult
+TO_FLAG = 1  # low numbers make flagging easy
+TO_UNFLAG = 1  # low numbers make unflagging easy
 WEIGHT = .009
-ALLOW_REPEATS = 0 #percentage of repeats allowed
-WHOLE_BOARD = 0 # pct of time the whole board is scanned
+ALLOW_REPEATS = 0  # percentage of repeats allowed
+WHOLE_BOARD = 0  # pct of time the whole board is scanned
 
 # FLOATS LARGER THAN 1
-SPEED_AMT = 1.02 # increased threshold change
-CHANGE = 1.006 # normal threshold change
+SPEED_AMT = 1.02  # increased threshold change
+CHANGE = 1.006  # normal threshold change
 
 # INTEGERS
 NUM_POS = 1
@@ -32,13 +32,13 @@ OUTPUT_GRID = 3
 
 # BOOLEAN
 SHARE_MAP = True
-RESET_MOVES = False # do you want your move list to empty after each game?
+RESET_MOVES = False  # do you want your move list to empty after each game?
 CHEAT = False
 
 # GAME CONSTANTS
 NUM_GAMES = 10000
 TORUS = False
-OPEN_FIRST = True# false to be able to lose on first click
+OPEN_FIRST = True  # false to be able to lose on first click
 LOAD_NN = False
 LOAD_ML = False
 SAVE_NN = False
@@ -47,7 +47,7 @@ SAVE_CSV = True
 ASCII_OUTPUT = False
 LEARN = False
 DRAW = False
-RECORD = False # this is really resource intensive
+RECORD = False  # this is really resource intensive
 HUMAN = False
 CHUNK = 10000
 SAVE_CHUNK = 1
@@ -58,6 +58,7 @@ DIFF_MINDS = False
 AGENTS = 1
 
 import math, os, sys, platform, pickle, random
+
 if DRAW:
     import pygame
     from pygame.locals import *
@@ -65,46 +66,58 @@ try:
     from numpy import *
     import numpy.random as nrand
 except:
-    print "You need numpy! Ahh!"
+    print("You need numpy! Ahh!")
     exit(-1)
+
 
 ################################################################################
 # Useful Vector Functions
 ################################################################################
 def sigmoid(x):
     return 1.0 / (1 + math.exp(-x))
+
+
 sigmoid = vectorize(sigmoid, otypes=[float])
+
 
 def sigPrime(x):
     # in terms of the output of the sigmoid function
     # otherwise would be sig(x) - sig^2(x)
     return x - x ** 2
+
+
 sigPrime = vectorize(sigPrime, otypes=[float])
+
 
 def oneMinus(x):
     return 1 - x
+
+
 oneMinus = vectorize(oneMinus, otypes=[float])
 
-def sub(x,y):
+
+def sub(x, y):
     return x - y
+
+
 sub = vectorize(sub, otypes=[float])
+
 
 ################################################################################
 # Neural Network
 ################################################################################
 class NeuralNet:
     def __init__(self, i, h, o):
-        self.w_ih = mat(nrand.uniform(-.05, .05,(i,h)))
-        self.w_ho = mat(nrand.uniform(-.05, .05,(h,o)))
-        self.m_ih = mat(zeros((i,h)))
-        self.m_ho = mat(zeros((h,o)))
+        self.w_ih = mat(nrand.uniform(-.05, .05, (i, h)))
+        self.w_ho = mat(nrand.uniform(-.05, .05, (h, o)))
+        self.m_ih = mat(zeros((i, h)))
+        self.m_ho = mat(zeros((h, o)))
 
     def getOut(self, i):
         self.h = sigmoid(mat(i) * self.w_ih)
         return sigmoid(self.h * self.w_ho).tolist()[0]
 
-    def train(self, i, t, a = .1, b = .01):
-
+    def train(self, i, t, a=.1, b=.01):
         # get output of our neural network
         out = mat(self.getOut(i))
 
@@ -122,12 +135,13 @@ class NeuralNet:
         self.w_ho = add(add(self.w_ho, a * c_ho), b * self.m_ho)
         self.m_ho = c_ho
 
+
 ########################################################################
 # MINESWEEPER
 ########################################################################
 
 class Game:
-    def __init__(self, width, height, mines, draw = True, tile_size = 32, torus = False):
+    def __init__(self, width, height, mines, draw=True, tile_size=32, torus=False):
         self.width = width
         self.height = height
         self.mines = mines
@@ -166,7 +180,7 @@ class Game:
         self.result = -1
         for i in range(self.width):
             for j in range(self.height):
-                self.guess[(i,j)] = .5
+                self.guess[(i, j)] = .5
 
         self.mine_array = {}
         for h in range(self.height):
@@ -200,7 +214,7 @@ class Game:
         self.did_change = True
         self.board[pos] = symbol
 
-        #draw stuff if drawing turned on
+        # draw stuff if drawing turned on
         if self.draw_board:
             x, y = pos
             p = (x * self.tile_size, y * self.tile_size)
@@ -220,7 +234,7 @@ class Game:
                 except:
                     s += "X"
             s += "\n"
-        print s
+        print(s)
 
     def mark(self, pos):
         # place a flag down or pull one up
@@ -250,14 +264,14 @@ class Game:
                 self.incorrect_digs += 1
             return cleared
 
-    def clear(self, pos, auto = False):
+    def clear(self, pos, auto=False):
         cleared = 0
         x = pos[0]
         y = pos[1]
 
         # if the space has a mine and it's not your first move
         if (self.mine_array[pos] == 1 and
-            (not self.first_click or not OPEN_FIRST)):
+                (not self.first_click or not OPEN_FIRST)):
 
             # go through every space on the board
             for h in range(self.height):
@@ -265,7 +279,7 @@ class Game:
 
                     # if the space is empty and flagged
                     if (self.mine_array[(w, h)] == 0 and
-                        self.board[(w, h)] == "f"):
+                            self.board[(w, h)] == "f"):
 
                         # mark it as incorrectly flagged
                         self.upTile((w, h), "i")
@@ -286,7 +300,7 @@ class Game:
                         self.upTile((w, h), "m")
 
             # mark your position as exploded
-            self.upTile(pos, "e") #
+            self.upTile(pos, "e")  #
 
             # end the game
             self.loses += 1
@@ -298,13 +312,13 @@ class Game:
             if self.torus:
                 w = self.width
                 h = self.height
-                area = [((x-1)%w, (y-1)%h), (x, (y-1)%h), ((x+1)%w, (y-1)%h),
-                        ((x-1)%w, y)      , (x, y)      , ((x+1)%w, y)      ,
-                        ((x-1)%w, (y+1)%h), (x, (y+1)%h), ((x+1)%w, (y+1)%h)]
+                area = [((x - 1) % w, (y - 1) % h), (x, (y - 1) % h), ((x + 1) % w, (y - 1) % h),
+                        ((x - 1) % w, y), (x, y), ((x + 1) % w, y),
+                        ((x - 1) % w, (y + 1) % h), (x, (y + 1) % h), ((x + 1) % w, (y + 1) % h)]
             else:
-                area = [(x-1, y-1), (x, y-1), (x+1, y-1),
-                        (x-1, y),   (x, y),   (x+1, y),
-                        (x-1, y+1), (x, y+1), (x+1, y+1)]
+                area = [(x - 1, y - 1), (x, y - 1), (x + 1, y - 1),
+                        (x - 1, y), (x, y), (x + 1, y),
+                        (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)]
             count = 0
             for s in area:
                 try:
@@ -325,7 +339,6 @@ class Game:
                         else:
                             break
 
-
         # if the space is empty
         if self.mine_array[pos] == 0:
 
@@ -333,13 +346,13 @@ class Game:
             if self.torus:
                 w = self.width
                 h = self.height
-                area = [((x-1)%w, (y-1)%h), (x, (y-1)%h), ((x+1)%w, (y-1)%h),
-                        ((x-1)%w, y)      , (x, y)      , ((x+1)%w, y)      ,
-                        ((x-1)%w, (y+1)%h), (x, (y+1)%h), ((x+1)%w, (y+1)%h)]
+                area = [((x - 1) % w, (y - 1) % h), (x, (y - 1) % h), ((x + 1) % w, (y - 1) % h),
+                        ((x - 1) % w, y), (x, y), ((x + 1) % w, y),
+                        ((x - 1) % w, (y + 1) % h), (x, (y + 1) % h), ((x + 1) % w, (y + 1) % h)]
             else:
-                area = [(x-1, y-1), (x, y-1), (x+1, y-1),
-                        (x-1, y),   (x, y),   (x+1, y),
-                        (x-1, y+1), (x, y+1), (x+1, y+1)]
+                area = [(x - 1, y - 1), (x, y - 1), (x + 1, y - 1),
+                        (x - 1, y), (x, y), (x + 1, y),
+                        (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)]
 
             # if the space is unknown
             if self.board[pos] == "_":
@@ -351,8 +364,7 @@ class Game:
                     try:
                         mines += self.mine_array[s]
                     except:
-                        pass # invalid position
-
+                        pass  # invalid position
 
                 # set your image to the number of adj. mines
                 self.upTile(pos, str(mines))
@@ -367,11 +379,11 @@ class Game:
                         if self.board[s] == "f":
                             flags += 1
                     except:
-                        pass # invalid position
+                        pass  # invalid position
 
                 # if the number of flags is your number
                 if ((flags == int(self.board[pos]) and not auto) or
-                    int(self.board[pos]) == 0):
+                        int(self.board[pos]) == 0):
 
                     # clear all of the unknown spaces around you
                     for s in area:
@@ -379,8 +391,7 @@ class Game:
                             if self.board[s] == "_":
                                 cleared += self.clear(s, True)
                         except:
-                            pass # invalid position
-
+                            pass  # invalid position
 
         return cleared
 
@@ -389,17 +400,17 @@ class Game:
         covered = 0
         for w in range(self.width):
             for h in range(self.height):
-                if (self.board[(w,h)] != "_" and
-                    self.board[(w,h)] != "f" and
-                    self.mine_array[(w,h)] == 0):
-                        cleared += 1
-                if (self.board[(w,h)] == "_" or
-                    self.board[(w,h)] == "f" and
-                    self.mine_array[(w,h)] == 1):
-                        covered += 1
+                if (self.board[(w, h)] != "_" and
+                        self.board[(w, h)] != "f" and
+                        self.mine_array[(w, h)] == 0):
+                    cleared += 1
+                if (self.board[(w, h)] == "_" or
+                        self.board[(w, h)] == "f" and
+                        self.mine_array[(w, h)] == 1):
+                    covered += 1
         self.cleared = cleared
         if (cleared == ((self.width * self.height) - self.mines) and
-            covered == self.mines):
+                covered == self.mines):
             self.FINISHED = True
             return True
         self.FINISHED = False
@@ -410,12 +421,13 @@ class Game:
         correct = 0
         for x in range(self.width):
             for y in range(self.height):
-                err = abs(self.mine_array[(x,y)] - self.guess[(x,y)])
+                err = abs(self.mine_array[(x, y)] - self.guess[(x, y)])
                 sq_err += err ** 2
                 if err < .5: correct += 1
         sq_err /= float(self.width * self.height)
         correct /= float(self.width * self.height)
         return sq_err, correct
+
 
 ################################################################################
 # Intelligent Agent
@@ -433,14 +445,15 @@ class Agent:
             nodes = [0] * 11
             nodes[i] = 1
             self.name2num_dict[names[i]] = nodes
-        a = (INPUT_GRID**2)*(11)
-        b = OUTPUT_GRID**2
-        self.nn = NeuralNet(a,a,b)
+        a = (INPUT_GRID ** 2) * (11)
+        b = OUTPUT_GRID ** 2
+        self.nn = NeuralNet(a, a, b)
         self.cheat = CHEAT
         self.memory = []
         self.alpha = ALPHA
         self.beta = BETA
         self.move_list = []
+
     def switch(self):
         self.human = 1 - self.human
 
@@ -448,23 +461,27 @@ class Agent:
         self.rand_moves = []
         self.num_moves = 0
         self.closed = []
-        self.thresh = INITIAL# * random.random()
+        self.thresh = INITIAL  # * random.random()
         if self.human and self.game.draw_board:
             x, y = pygame.mouse.get_pos()
             if self.game.torus:
                 x %= self.game.width
                 y %= self.game.height
             else:
-                if x >= self.game.width: x = self.game.width - 1
-                elif x < 0: x = 0
-                if y >= self.game.height: y = self.game.height - 1
-                elif y < 0: y = 0
+                if x >= self.game.width:
+                    x = self.game.width - 1
+                elif x < 0:
+                    x = 0
+                if y >= self.game.height:
+                    y = self.game.height - 1
+                elif y < 0:
+                    y = 0
             s = (x, y)
 
         else:
-            #s = (random.randint(0, self.game.width),
+            # s = (random.randint(0, self.game.width),
             #     random.randint(0, self.game.height))
-            s = (0,0)
+            s = (0, 0)
         self.old_pos = s
         self.pos = s
         self.old_action = "L"
@@ -476,9 +493,9 @@ class Agent:
         self.certainty = {}
         for i in range(self.game.width):
             for j in range(self.game.height):
-                if not SHARE_MAP: self.guess[(i,j)] = .5
-                self.visited[(i,j)] = 0
-                self.certainty[(i,j)] = .5
+                if not SHARE_MAP: self.guess[(i, j)] = .5
+                self.visited[(i, j)] = 0
+                self.certainty[(i, j)] = .5
 
     def mouse2Grid(self, pos):
         x, y = pos
@@ -486,7 +503,7 @@ class Agent:
         y = int(y / self.game.tile_size)
         return (x, y)
 
-    def getArea(self,x,y,n):
+    def getArea(self, x, y, n):
         area = []
         for j in range(n):
             b = y + j - int(n / 2)
@@ -502,46 +519,47 @@ class Agent:
         area = []
         for j in range(self.game.height):
             for i in range(self.game.width):
-                area.append((i,j))
+                area.append((i, j))
         return area
 
     def threshClick(self):
-        x,y = self.pos
+        x, y = self.pos
         # get the guess for the space you're on
         if SHARE_MAP:
             out = self.game.guess[self.pos]
-        else: out = self.guess[self.pos]
+        else:
+            out = self.guess[self.pos]
 
         name = self.game.board[self.pos]
         m = self.num_moves
         speed = 1
-        #if m == SPEED_MOVES:
+        # if m == SPEED_MOVES:
         #     "speeding up"
         if m > SPEED_MOVES:
             speed = SPEED_AMT
-        #if m == MAX_MOVES:
+        # if m == MAX_MOVES:
         #    print "giving up"
         if m < MAX_MOVES:
             if out <= self.thresh * TO_DIG and name != "f":
-                #print "dig"
+                # print "dig"
                 self.close(self.pos)
-                cleared = self.game.dig(self.pos) # how many spaces we cleared
-                #self.visited[(x,y)] += 5
-                #if name not in "012345678" and m > SPEED_MOVES:
+                cleared = self.game.dig(self.pos)  # how many spaces we cleared
+                # self.visited[(x,y)] += 5
+                # if name not in "012345678" and m > SPEED_MOVES:
                 if cleared > 0:
-                    #print "cleared", cleared
+                    # print "cleared", cleared
                     self.resetThresh(speed)
             elif (out * TO_UNFLAG <= self.thresh and name == "f"):
-                #print "unflag"
+                # print "unflag"
                 self.open(self.pos)
                 self.game.mark(self.pos)
-                #self.thresh = THRESH * speed
+                # self.thresh = THRESH * speed
                 if random.random() < WHOLE_BOARD: self.wholeBoard()
             elif (out >= (1 - self.thresh) * TO_FLAG and name != "f"):
-                #print "flag"
+                # print "flag"
                 self.close(self.pos)
                 self.game.mark(self.pos)
-                #self.visited[self.pos] += 5
+                # self.visited[self.pos] += 5
                 self.resetThresh(speed)
                 if random.random() < WHOLE_BOARD: self.wholeBoard()
 
@@ -554,7 +572,7 @@ class Agent:
             self.game.throwTowel()
 
         if name == "0":
-            pass#self.visited[(x,y)] += 10
+            pass  # self.visited[(x,y)] += 10
 
     def resetThresh(self, speed):
         self.thresh = THRESH * speed
@@ -568,10 +586,10 @@ class Agent:
         ############################################################
         # MOVEMENT
         ############################################################
-        x,y = self.pos
+        x, y = self.pos
         # if you're on green, move to brown (most of the time)
-        area = self.getArea(x,y,3)
-        von_neumann = [(x,y+1),(x,y-1),(x+1,y),(x-1,y)]
+        area = self.getArea(x, y, 3)
+        von_neumann = [(x, y + 1), (x, y - 1), (x + 1, y), (x - 1, y)]
         possible = []
         if random.random() < HUG_EDGE:
             for pos in area:
@@ -584,10 +602,11 @@ class Agent:
                     if (a in grn) and (self.game.board[pos] in brn):
                         possible.append(pos)
                     if (random.random < BRN2GRN and (a in brn) and
-                        (self.game.board[pos] in grn) and
-                        (pos in von_neumann)):
+                            (self.game.board[pos] in grn) and
+                            (pos in von_neumann)):
                         possible.append(pos)
-                except: pass
+                except:
+                    pass
 
         # if this isn't possible, anywhere is fine
         if len(possible) == 0 or random.random < EXPLORE:
@@ -626,14 +645,13 @@ class Agent:
         else:
             for i in range(self.game.width):
                 for j in range(self.game.height):
-                    self.rand_moves.append((i,j))
+                    self.rand_moves.append((i, j))
             random.shuffle(self.rand_moves)
             m = self.num_moves
             speed = 1
             if m > SPEED_MOVES:
                 speed = SPEED_AMT
             self.thresh *= CHANGE * speed
-
 
     def scanMove(self):
         x, y = self.pos
@@ -652,17 +670,17 @@ class Agent:
         p = []
         for i in range(self.game.width):
             for j in range(self.game.height):
-                p.append((i,j))
+                p.append((i, j))
         random.shuffle(p)
         for s in p:
             self.getNNOutOf(s)
 
     def getNNOutOf(self, p):
-        x,y = p
+        x, y = p
 
         # figure out where your are and what's around you
-        self.area = self.getArea(x,y,OUTPUT_GRID)
-        self.area2 = self.getArea(x,y,INPUT_GRID)
+        self.area = self.getArea(x, y, OUTPUT_GRID)
+        self.area2 = self.getArea(x, y, INPUT_GRID)
 
         # GET INPUT FROM AREA AROUND YOU
         input = []
@@ -686,7 +704,7 @@ class Agent:
         # this is not used to determine where to go or what to do
         # it is only used durring the learning phase
         target = []
-        mask = [] # rule based learning
+        mask = []  # rule based learning
         s = 0
         o = 0
         for i in range(len(self.area)):
@@ -706,11 +724,10 @@ class Agent:
                 target.append(.5)
         self.target = target
 
-
         center = 0
         self.tile_done = True
         try:
-            center = int(self.game.board[self.area[len(self.area)/2]])
+            center = int(self.game.board[self.area[len(self.area) / 2]])
         except:
             center = -1
         if s == center and center != 0:
@@ -727,7 +744,6 @@ class Agent:
             if random.random() < TRAIN_RULES:
                 self.nn.train(input, mask, self.alpha * .5, self.beta * .5)
 
-
         ################################################################
         # get output from neural net
         ################################################################
@@ -736,7 +752,6 @@ class Agent:
             self.nn.train(input, target, self.alpha, self.beta)
         output = self.nn.getOut(input)
         self.output = output
-
 
         '''num_mines = sum(output)
         if self.tile_done:
@@ -747,22 +762,22 @@ class Agent:
         weight = WEIGHT
 
         # update your guesses for whether or not a square has a mine
-        for i in range(OUTPUT_GRID**2):
+        for i in range(OUTPUT_GRID ** 2):
             try:
                 if SHARE_MAP:
-                    output[i] = self.game.guess[self.area[i]] * (1-weight) + output[i] * weight
+                    output[i] = self.game.guess[self.area[i]] * (1 - weight) + output[i] * weight
                     self.game.guess[self.area[i]] = output[i]
                 else:
-                    output[i] = self.guess[self.area[i]] * (1-weight) + output[i] * weight
+                    output[i] = self.guess[self.area[i]] * (1 - weight) + output[i] * weight
                     self.guess[self.area[i]] = output[i]
             except:
-                pass # this just means we're looking out of bounds
+                pass  # this just means we're looking out of bounds
 
     def act(self):
-        #print len(self.move_list)
+        # print len(self.move_list)
         if not self.game.FINISHED:
             self.old_pos = self.pos
-            x,y = self.pos
+            x, y = self.pos
             self.getNNOutOf(self.pos)
             ################################################################
             # Q STUFF
@@ -808,7 +823,7 @@ class Agent:
 
                         if event.type == QUIT:
                             self.game.running = False
-                            pygame.quit ()
+                            pygame.quit()
                             break
 
                         elif event.type == KEYDOWN:
@@ -817,11 +832,13 @@ class Agent:
                                 break
                             if event.key == K_ESCAPE:
                                 self.game.running = False
-                                pygame.quit ()
+                                pygame.quit()
                                 break
                             if event.key == K_c:
-                                if self.cheat: print "not cheating"
-                                else: print "cheating"
+                                if self.cheat:
+                                    print("not cheating")
+                                else:
+                                    print("cheating")
                                 self.cheat = bool(1 - int(self.cheat))
                                 break
                             if event.key == K_g:
@@ -885,8 +902,10 @@ class Agent:
                             if event.key == K_h:
                                 self.switch()
                             if event.key == K_c:
-                                if self.cheat: print "not cheating"
-                                else: print "cheating"
+                                if self.cheat:
+                                    print("not cheating")
+                                else:
+                                    print("cheating")
                                 self.cheat = bool(1 - int(self.cheat))
                                 break
                             if event.key == K_g:
@@ -894,14 +913,13 @@ class Agent:
                                 break
                             if event.key == K_ESCAPE:
                                 self.game.running = False
-                                pygame.quit ()
+                                pygame.quit()
                                 break
 
                         if event.type == QUIT:
                             self.game.running = False
-                            pygame.quit ()
+                            pygame.quit()
                             break
-
 
                         found = True
                 if random.random() < WHOLE_BOARD: self.wholeBoard()
@@ -939,15 +957,14 @@ class Agent:
             if found:
                 m = [self.input, self.target, self.max_in]
                 if (random.random() < ALLOW_REPEATS or
-                    m not in self.move_list):
+                        m not in self.move_list):
                     self.move_list.append(m)
-                    #print len(self.move_list)
+                    # print len(self.move_list)
                 if len(self.move_list) > MOVES_REMEMBERED:
                     r = random.randint(0, len(self.move_list))
-                    self.move_list = self.move_list[:r] + self.move_list[r+1:]
-                    #self.move_list = self.move_list[1:]
+                    self.move_list = self.move_list[:r] + self.move_list[r + 1:]
+                    # self.move_list = self.move_list[1:]
                 self.num_moves += 1
-
 
             '''if self.num_moves == MOVES_LEARNED:
                 print "truncating move list"
@@ -971,29 +988,29 @@ class Agent:
         for i in range(self.game.width):
             for j in range(self.game.height):
                 if SHARE_MAP:
-                    g = self.game.guess[(i,j)]
+                    g = self.game.guess[(i, j)]
                 else:
-                    g = self.guess[(i,j)]
-                err = min(g, 1-g) ** 2
+                    g = self.guess[(i, j)]
+                err = min(g, 1 - g) ** 2
                 global_certainty += 1 - err
-                if (i,j) in self.area:
+                if (i, j) in self.area:
                     local_certainty += 1 - err
-                if (i,j) in self.closed and random.random() < .9:
+                if (i, j) in self.closed and random.random() < .9:
                     continue
                 if err < max(lowest_errors):
                     lowest_errors.append(err)
-                    self.best_guesses.append((i,j))
+                    self.best_guesses.append((i, j))
                     if len(self.best_guesses) > NUM_POS:
                         self.best_guesses = self.best_guesses[1:]
                         lowest_errors = lowest_errors[1:]
                     if err < lowest:
-                        best = (i,j)
+                        best = (i, j)
                         lowest = err
 
         global_certainty /= float(self.game.width * self.game.height)
         local_certainty /= float(self.game.width * self.game.height)
 
-    def QLearn(self, move, reward, threshold = .05, decay = .7):
+    def QLearn(self, move, reward, threshold=.05, decay=.7):
         # while there's reward and states left
         while reward > threshold and move >= 0:
 
@@ -1022,9 +1039,9 @@ class Agent:
         # go through each move and back propogate rewards
         index = 0
         avg_num = 0
-        for index in range(min(len(self.move_list),MOVES_LEARNED)):
+        for index in range(min(len(self.move_list), MOVES_LEARNED)):
             move = self.move_list[index]
-            self.nn.train(move[0], move[1],self.alpha, self.beta)
+            self.nn.train(move[0], move[1], self.alpha, self.beta)
         random.shuffle(self.move_list)
         self.alpha *= OPEN_MIND
         self.beta *= OPEN_MIND
@@ -1049,21 +1066,22 @@ class Agent:
                 sum += 1
         return sum
 
+
 def main():
     if DIFF == 0:
-        #print "SMALL - 8x8 w/ 10 mines"
+        # print "SMALL - 8x8 w/ 10 mines"
         w = 8
         h = 8
         m = 10
         t = 64
     if DIFF == 1:
-        #print "MEDIUM - 16x16 w/ 40 mines"
+        # print "MEDIUM - 16x16 w/ 40 mines"
         w = 16
         h = 16
         m = 40
         t = 32
     if DIFF == 2:
-        #print "LARGE - 32x16 w/ 99 mines"
+        # print "LARGE - 32x16 w/ 99 mines"
         w = 32
         h = 16
         m = 99
@@ -1077,7 +1095,7 @@ def main():
 
     # create your game board
     if DRAW: os.environ['SDL_VIDEO_CENTERED'] = '1'
-    game = Game(w, h, m, draw = DRAW, tile_size = t, torus = TORUS)
+    game = Game(w, h, m, draw=DRAW, tile_size=t, torus=TORUS)
     count = 0
     frame = 0
     banner = "W:0 - L:0"
@@ -1089,7 +1107,7 @@ def main():
     alist = []
     for i in range(AGENTS):
         alist.append(Agent(game))
-    #agent.cheat = True
+    # agent.cheat = True
     if HUMAN:
         alist[0].switch()
 
@@ -1100,32 +1118,32 @@ def main():
         if DIFF_MINDS:
             for i in range(len(alist)):
                 try:
-                    f = open(os.path.join("data","nn" + str(i) + ".obj"), "r")
+                    f = open(os.path.join("data", "nn" + str(i) + ".obj"), "r")
                     alist[i].nn = pickle.load(f)
-                    print "Loading Agent " + str(i) + "'s neural network."
+                    print("Loading Agent " + str(i) + "'s neural network.")
                     f.close()
                 except:
                     try:
-                        f = open(os.path.join("data","nn.obj"), "r")
+                        f = open(os.path.join("data", "nn.obj"), "r")
                         alist[i].nn = pickle.load(f)
                         for agent in alist:
                             agent.nn = alist[i].nn
-                        print "Loading stock neural network."
+                        print("Loading stock neural network.")
                         f.close()
                     except:
-                        #print sys.exc_info()
-                        print "Couldn't load mind. Creating one."
+                        # print sys.exc_info()
+                        print("Couldn't load mind. Creating one.")
         else:
             try:
-                f = open(os.path.join("data","nn.obj"), "r")
+                f = open(os.path.join("data", "nn.obj"), "r")
                 alist[0].nn = pickle.load(f)
                 for agent in alist:
                     agent.nn = alist[0].nn
-                print "Loading neural network."
+                print("Loading neural network.")
                 f.close()
             except:
-                #print sys.exc_info()
-                print "Couldn't load mind. Creating one."
+                # print sys.exc_info()
+                print("Couldn't load mind. Creating one.")
 
     ####################################################################
     # load your move list
@@ -1133,13 +1151,13 @@ def main():
     if LOAD_ML:
         for agent in alist:
             try:
-                f = open(os.path.join("data","ml.obj"), "r")
+                f = open(os.path.join("data", "ml.obj"), "r")
                 agent.move_list = pickle.load(f)
-                print str(len(agent.move_list)) + " moves loaded."
+                print(str(len(agent.move_list)) + " moves loaded.")
                 f.close()
             except:
-                #print sys.exc_info()
-                print "Couldn't load moves."
+                # print sys.exc_info()
+                print("Couldn't load moves.")
 
     ####################################################################
     # create a log file
@@ -1173,41 +1191,40 @@ def main():
                 game.printBoard()
 
             if game.draw_board:
-                game.clock.tick()#60) #to pace the bot
-                for event in pygame.event.get() :
+                game.clock.tick()  # 60) #to pace the bot
+                for event in pygame.event.get():
                     if event.type == QUIT:
                         game.running = False
-                        pygame.quit ()
+                        pygame.quit()
 
                     # if the keyboard is used
                     elif event.type == KEYDOWN:
                         if event.key == K_ESCAPE:
                             game.running = False
-                            pygame.quit ()
+                            pygame.quit()
                         if ((event.key == K_r and alist[0].human) or
-                            (event.key == K_h and not alist[0].human)):
+                                (event.key == K_h and not alist[0].human)):
                             alist[0].switch()
                         if event.key == K_c:
                             alist[0].cheat = bool(1 - int(alist[0].cheat))
                         if event.key == K_g:
                             game.goggles = (game.goggles + 1) % 3
 
-
                 if game.goggles == 0 or game.goggles == 1:
-                    screen.blit(game.surface, (0,0))
+                    screen.blit(game.surface, (0, 0))
 
                 # DRAW AGENT'S GUESS
                 # purple = mine, yellow = not mine
                 # transparent = certain, opaque = not sure
                 if game.goggles == 1 or game.goggles == 2:
-                    temp = pygame.Surface((w,h))
-                    tran = pygame.Surface((t-1, t-1))
+                    temp = pygame.Surface((w, h))
+                    tran = pygame.Surface((t - 1, t - 1))
                     for i in range(w):
                         for j in range(h):
-                            g = 1 - game.guess[(i,j)]
+                            g = 1 - game.guess[(i, j)]
                             g *= 255
-                            tran.fill((160,g,255-g))
-                            g = int(min(g, 255-g) * 2)
+                            tran.fill((160, g, 255 - g))
+                            g = int(min(g, 255 - g) * 2)
                             tran.set_alpha(int(g / 1.4))
                             screen.blit(tran, (i * t + 1, j * t + 1))
 
@@ -1216,15 +1233,15 @@ def main():
                 ########################################################
                 for agent in alist:
                     x, y = agent.pos
-                    rx, ry = random.randint(-t/3,t/3), random.randint(-t/3,t/3)
-                    X, Y = x * t + t/2.0 + rx, y * t + t/2.0 + ry
-                    pygame.draw.circle(screen, (0,0,0), (int(X),int(Y)), 3)
+                    rx, ry = random.randint(-t / 3, t / 3), random.randint(-t / 3, t / 3)
+                    X, Y = x * t + t / 2.0 + rx, y * t + t / 2.0 + ry
+                    pygame.draw.circle(screen, (0, 0, 0), (int(X), int(Y)), 3)
 
                 ########################################################
                 # MAKE A MOVIE
                 ########################################################
                 if RECORD and game.did_change:
-                    print "recording"
+                    print("recording")
                     old_board = copy(game.board)
                     pygame.image.save(screen, os.path.join("video", str(frame) + ".png"))
                     frame += 1
@@ -1241,8 +1258,9 @@ def main():
         ################################################################
         win, lose = game.wins, game.loses
         try:
-            win_pct = (win*100.0)/(win+lose)
-        except: win_pct = 0
+            win_pct = (win * 100.0) / (win + lose)
+        except:
+            win_pct = 0
 
         s = (str(win) + "," +
              str(lose) + "," +
@@ -1258,11 +1276,11 @@ def main():
 
         banner = "W: " + str(win) + " - L: " + str(lose)
         if DRAW: pygame.display.set_caption(banner)
-        #print "W: ", win, " - L: ", lose
+        # print "W: ", win, " - L: ", lose
         ################################################################
         # CONDOR PRINT OUT
         ################################################################
-        print s
+        print(s)
 
         ################################################################
         # START NEW FILE AFTER chunk ITTERATIONS
@@ -1302,35 +1320,35 @@ def main():
                 for i in range(len(alist)):
                     if i % SAVE_CHUNK == count % SAVE_CHUNK:
                         try:
-                            f = open(os.path.join("data","nn" + str(i) + ".obj"), "w")
+                            f = open(os.path.join("data", "nn" + str(i) + ".obj"), "w")
                             pickle.dump(alist[i].nn, f)
-                            print "Saving neural network number " + str(i) + "."
+                            print("Saving neural network number " + str(i) + ".")
                             f.close()
                         except:
-                            #pass
-                            print "Couldn't save your neural network."
+                            # pass
+                            print("Couldn't save your neural network.")
             else:
                 try:
-                    f = open(os.path.join("data","nn.obj"), "w")
+                    f = open(os.path.join("data", "nn.obj"), "w")
                     pickle.dump(alist[0].nn, f)
-                    print "Saving your neural network."
+                    print("Saving your neural network.")
                     f.close()
                 except:
-                    #pass
-                    print "Couldn't save your neural network."
+                    # pass
+                    print("Couldn't save your neural network.")
 
         ################################################################
         # SAVE MOVE LIST
         ################################################################
         if SAVE_ML and count % SAVE_INT == 0:
             try:
-                f = open(os.path.join("data","ml.obj"), "w")
+                f = open(os.path.join("data", "ml.obj"), "w")
                 pickle.dump(alist[0].move_list, f)
-                print "Saved " + str(len(alist[0].move_list)) + " moves."
+                print("Saved " + str(len(alist[0].move_list)) + " moves.")
                 f.close()
             except:
-                #pass
-                print "Couldn't save your moves."
+                # pass
+                print("Couldn't save your moves.")
 
         ################################################################
         # RESET BOARD
@@ -1339,6 +1357,7 @@ def main():
         num_games += 1
         if num_games == NUM_GAMES:
             game.running = False
+
 
 if __name__ == '__main__':
     main()

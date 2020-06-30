@@ -24,43 +24,55 @@ import random, os, math
 from numpy import *
 import numpy.random as nrand
 
+
 ################################################################################
 # Useful Vector Functions
 ################################################################################
 def sigmoid(x):
     return 1.0 / (1 + math.exp(-x))
+
+
 sigmoid = vectorize(sigmoid, otypes=[float])
+
 
 def sigPrime(x):
     # in terms of the output of the sigmoid function
     # otherwise would be sig(x) - sig^2(x)
     return x - x ** 2
+
+
 sigPrime = vectorize(sigPrime, otypes=[float])
+
 
 def oneMinus(x):
     return 1 - x
+
+
 oneMinus = vectorize(oneMinus, otypes=[float])
 
-def sub(x,y):
+
+def sub(x, y):
     return x - y
+
+
 sub = vectorize(sub, otypes=[float])
+
 
 ################################################################################
 # Neural Network
 ################################################################################
 class NeuralNet:
     def __init__(self, i, h, o):
-        self.w_ih = mat(nrand.uniform(-.05, .05,(i,h)))
-        self.w_ho = mat(nrand.uniform(-.05, .05,(h,o)))
-        self.m_ih = mat(zeros((i,h)))
-        self.m_ho = mat(zeros((h,o)))
+        self.w_ih = mat(nrand.uniform(-.05, .05, (i, h)))
+        self.w_ho = mat(nrand.uniform(-.05, .05, (h, o)))
+        self.m_ih = mat(zeros((i, h)))
+        self.m_ho = mat(zeros((h, o)))
 
     def getOut(self, i):
         self.h = sigmoid(mat(i) * self.w_ih)
         return sigmoid(self.h * self.w_ho).tolist()[0]
 
-    def train(self, i, t, a = .1, b = .01):
-
+    def train(self, i, t, a=.1, b=.01):
         # get output of our neural network
         out = mat(self.getOut(i))
 
@@ -78,26 +90,27 @@ class NeuralNet:
         self.w_ho = add(add(self.w_ho, a * c_ho), b * self.m_ho)
         self.m_ho = c_ho
 
+
 ################################################################################
 # example
 ################################################################################
 def main():
-
-    nn = NeuralNet(2,10,1)
-    examples = [([0,1], [1]),
-                ([1,1], [0]),
-                ([1,0], [1]),
-                ([0,0], [0])]
+    nn = NeuralNet(2, 10, 1)
+    examples = [([0, 1], [1]),
+                ([1, 1], [0]),
+                ([1, 0], [1]),
+                ([0, 0], [0])]
 
     for i in range(10000):
-        print i
-        x = random.randint(0,4)
+        print(i)
+        x = random.randint(0, 4)
         nn.train(examples[x][0], examples[x][1], 3)
 
-    print nn.getOut([0,1])
-    print nn.getOut([1,1])
-    print nn.getOut([1,0])
-    print nn.getOut([0,0])
+    print(nn.getOut([0, 1]))
+    print(nn.getOut([1, 1]))
+    print(nn.getOut([1, 0]))
+    print(nn.getOut([0, 0]))
+
 
 if __name__ == '__main__':
     main()

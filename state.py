@@ -27,11 +27,13 @@
 import random, pygame, os, math, copy
 from numpy import *
 import numpy.random as nrand
+
+
 ################################################################################
 # State-action-reward thing
 ################################################################################
 class State:
-    def __init__(self, array, rewards = [.5,.5,.5,.5,.5,.5,.5]):
+    def __init__(self, array, rewards=[.5, .5, .5, .5, .5, .5, .5]):
         self.actions = "LRJNESW"
         self.rewards = rewards
         self.getSym(array)
@@ -52,37 +54,37 @@ class State:
         # creates a list of 3x3 arrays symmetrical to the one passed
         # and changes directions to match
 
-        rot0 = [[a[0][0],a[0][1],a[0][2]],
-                [a[1][0],a[1][1],a[1][2]],
-                [a[2][0],a[2][1],a[2][2]]]
+        rot0 = [[a[0][0], a[0][1], a[0][2]],
+                [a[1][0], a[1][1], a[1][2]],
+                [a[2][0], a[2][1], a[2][2]]]
 
-        rot1 = [[a[2][0],a[1][0],a[0][0]],
-                [a[2][1],a[1][1],a[0][1]],
-                [a[2][2],a[1][2],a[0][2]]]
+        rot1 = [[a[2][0], a[1][0], a[0][0]],
+                [a[2][1], a[1][1], a[0][1]],
+                [a[2][2], a[1][2], a[0][2]]]
 
-        rot2 = [[a[2][2],a[2][1],a[2][0]],
-                [a[1][2],a[1][1],a[1][0]],
-                [a[0][2],a[0][1],a[0][0]]]
+        rot2 = [[a[2][2], a[2][1], a[2][0]],
+                [a[1][2], a[1][1], a[1][0]],
+                [a[0][2], a[0][1], a[0][0]]]
 
-        rot3 = [[a[0][2],a[1][2],a[2][2]],
-                [a[0][1],a[1][1],a[2][1]],
-                [a[0][0],a[1][0],a[2][0]]]
+        rot3 = [[a[0][2], a[1][2], a[2][2]],
+                [a[0][1], a[1][1], a[2][1]],
+                [a[0][0], a[1][0], a[2][0]]]
 
-        flip0 = [[a[0][2],a[0][1],a[0][0]],
-                 [a[1][2],a[1][1],a[1][0]],
-                 [a[2][2],a[2][1],a[2][0]]]
+        flip0 = [[a[0][2], a[0][1], a[0][0]],
+                 [a[1][2], a[1][1], a[1][0]],
+                 [a[2][2], a[2][1], a[2][0]]]
 
-        flip1 = [[a[0][0],a[1][0],a[2][0]],
-                 [a[0][1],a[1][1],a[2][1]],
-                 [a[0][2],a[1][2],a[2][2]]]
+        flip1 = [[a[0][0], a[1][0], a[2][0]],
+                 [a[0][1], a[1][1], a[2][1]],
+                 [a[0][2], a[1][2], a[2][2]]]
 
-        flip2 = [[a[2][0],a[2][1],a[2][2]],
-                 [a[1][0],a[1][1],a[1][2]],
-                 [a[0][0],a[0][1],a[0][2]]]
+        flip2 = [[a[2][0], a[2][1], a[2][2]],
+                 [a[1][0], a[1][1], a[1][2]],
+                 [a[0][0], a[0][1], a[0][2]]]
 
-        flip3 = [[a[2][2],a[1][2],a[0][2]],
-                 [a[2][1],a[1][1],a[0][1]],
-                 [a[2][0],a[1][0],a[0][0]]]
+        flip3 = [[a[2][2], a[1][2], a[0][2]],
+                 [a[2][1], a[1][1], a[0][1]],
+                 [a[2][0], a[1][0], a[0][0]]]
 
         self.sym = [rot0, rot1, rot2, rot3,
                     flip0, flip1, flip2, flip3]
@@ -94,13 +96,13 @@ class State:
         for action in action_string:
             n = self.actions.index(action)
             self.rewards[n] = (self.rewards[n] + 1) / 2.0
-            
+
     def punish(self, action_string):
         for action in action_string:
             n = self.actions.index(action)
-            #print action, n, self.actions
+            # print action, n, self.actions
             self.rewards[n] = self.rewards[n] / 2.0
-        
+
     def isMatch(self, array):
         # run through each symmetry
         for i in range(8):
@@ -123,38 +125,39 @@ class State:
                 action_i = i
         return action_i
 
+
 ################################################################################
 # example
 ################################################################################
 def main():
-
-    a = [["_","N","_"],
-         ["W","_","E"],
-         ["_","S","_"]]
+    a = [["_", "N", "_"],
+         ["W", "_", "E"],
+         ["_", "S", "_"]]
     state = State(a)
-    print state.actions
+    print(state.actions)
 
-    b = [["_","S","_"],
-         ["W","_","E"],
-         ["_","N","_"]]
+    b = [["_", "S", "_"],
+         ["W", "_", "E"],
+         ["_", "N", "_"]]
 
-    c = [["_","S","_"],
-         ["N","_","W"],
-         ["_","E","_"]]
+    c = [["_", "S", "_"],
+         ["N", "_", "W"],
+         ["_", "E", "_"]]
 
-    d = [["_","S","_"],
-         ["E","_","W"],
-         ["_","N","_"]]
-    print state.isMatch(b)
-    print state.actions
+    d = [["_", "S", "_"],
+         ["E", "_", "W"],
+         ["_", "N", "_"]]
+    print(state.isMatch(b))
+    print(state.actions)
 
-    print state.isMatch(c)
-    print state.actions
+    print(state.isMatch(c))
+    print(state.actions)
 
-    print state.isMatch(d)
-    print state.actions
+    print(state.isMatch(d))
+    print(state.actions)
 
     state.printSym()
-    
+
+
 if __name__ == '__main__':
     main()
